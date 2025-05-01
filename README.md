@@ -1,1 +1,1 @@
-# powell_conjugate
+# This repository is for testing Powell's conjugate direction method (1964)
