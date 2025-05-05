@@ -1,4 +1,4 @@
-function [na,nb,nc,fna,fnb,fnc] = definite_bracket(a,b,c,d,fa,fb,fc,fd)
+function [na,nb,nc,fna,fnb,fnc,cand] = definite_bracket(a,b,c,d,fa,fb,fc,fd)
 % We delete one point among {a,b,c} to get a definite bracket. If there is
 % no definite bracket, we will delete the point with the largest function
 % value.
@@ -19,6 +19,12 @@ end
 if (fs(1) > fs(2)) && (fs(2) < fs(4))
     cand = [cand, idx(3)];
 end
+
+if (fs(1) > fs(2)) && (fs(2) < fs(3))
+    cand = [cand, idx(4)];
+end
+
+cand = setdiff(cand,4);
 
 if ~isempty(cand)
     [~, mi] = max(f(cand));

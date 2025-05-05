@@ -9,7 +9,7 @@ distances = abs([a, b, c] - d);
 if idx == 1
     na = d;
     fna = fd;
-elseif idx ==2
+elseif idx == 2
     nb = d;
     fnb = fd;
 else

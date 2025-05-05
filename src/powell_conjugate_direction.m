@@ -2,7 +2,7 @@ function [xopt, fopt, direc, iter, warnflag, funcalls, allvecs] = ...
     powell_conjugate_direction(func, x0, options)
 %{
 Uses a modification of Powell's method to find the minimum of
-a function of N variables. 
+a function of N variables with unbounded constaints. 
 
 Outputs:
 xopt : array        -Parameter which minimizes 'func'.
@@ -30,19 +30,10 @@ arguments
     options.ftol (1,1) double {mustBePositive} = 1e-6
     
     % Maximal interations for optimization
-    options.maxiter (1,1) double {mustBeInteger, mustBePositive} = length(x0)*1000
+    options.maxiter (1,1) double {mustBeInteger, mustBePositive} = length(x0)*10000
 
     % Maximal times to evaluate objective function
-    options.maxfun (1,1) double {mustBeInteger, mustBePositive} = length(x0)*1000
-
-    % Lower bounds for parameter.
-    options.lower_bound (:,1) double = -inf(length(x0), 1) 
-
-    % upper bounds for parameter.
-    options.upper_bound (:,1) double = inf(length(x0), 1) 
-
-    % If true, fopt, xi, direc, iter, funcalls, and warnflag are returned.
-    options.full_output {mustBeNumericOrLogical} = false   
+    options.maxfun (1,1) double {mustBeInteger, mustBePositive} = length(x0)*10000
 
     % If true, print convergence messages.
     options.disp {mustBeNumericOrLogical} = false       
@@ -52,10 +43,6 @@ arguments
 
     % Initial direction set to search.
     options.direc (:,:) double = eye([length(x0),length(x0)])
-
-    % Define callable function to operate after every iteration.
-    options.callback function_handle = @(intermediate_values, state) [];
-
 end
 
 % Abbreviate variable names.
@@ -63,8 +50,6 @@ xtol = options.xtol;
 ftol = options.ftol;
 maxiter = options.maxiter;
 maxfun = options.maxfun;
-lb = options.lower_bound;
-ub = options.upper_bound;
 direc = options.direc;
 retall = options.return_all;
 
@@ -91,29 +76,14 @@ end
 
 % Outer iteration begins
 
-% Use x1 to record initial point in every iteration.
-% x1 is used in line 148 to calculate pn-p0.
-x1 = x0;  
-% Use deltaf to define the initial search step in linesearch process.
+% Use p0 to record initial point in every iteration.
+p0 = x0;  
+% Use fopt to record the initial function value in every iteration.
+fp0 = fopt; 
+% Use init_step to define the init step of linesearch in every iterattion.
 deltaf = nan;
 
-% Recording remaining calls to terminate the progress in iterations.
 while true
-% Operate callback process
-if ~isempty(options.callback)
-    intermediate_values = struct('iteration',iter,...
-        'x', xopt, ...
-        'y', fopt, ...
-        'direction', direc, ...
-        'evaluations', funcalls);
-    stop = options.callback(intermediate_values, 'iter');
-    if stop == true
-        warnflag = -1; %user use callback to terminate. 
-        disp('Terminated by callback.');
-        break;
-    end
-end
-
 % Check the numbers of iterations and function evaluations. 
 if funcalls >= maxfun
     warnflag = 1;
@@ -130,18 +100,18 @@ bigind = 0;
 delta = 0;
 
 % Step 1 : Iterate over directions
-% Record current fopt to check the relative error after iteration.
-% fx is updated after every outer iteration and
-% used in line 143 to calculate relative error.
-fx1 = fopt; 
 for i = 1:length(direc)
     d = direc(:, i);
     fx_prev = fopt;
+    
+    % myfunc = @(x) func(xopt + d * x);
+    % [alpha, fopt, ~, feval_count] = direct_search(myfunc, 0, line_step, 0.5, ftol, inf);
+    % xopt = xopt + d * alpha;
 
     [xopt, fopt, feval_count, ~] = linesearch_powell(func, xopt, d, ...
-        lower_bound=lb ,upper_bound=ub, ...
         remaining_calls= (maxfun-funcalls), ...
         init_step=deltaf);
+
     funcalls = funcalls + feval_count;
 
     if funcalls >= maxfun
@@ -162,39 +132,40 @@ if retall
     allvecs{end+1} = xopt;
 end
 
-% Step3 : Construct extrapolated point.
-d = xopt - x1; 
-% check the maximal step along direction d.
-[~, lmax] = line_for_search(xopt, d, lb, ub);
-% Calculate f(pn), caution! here we assume lb, ub to contain 2pn - p0,
-% otherwise calculate f(pn+ lmax(pn) * (pn-p0)).
-% The default case is that lb = -inf, ub = inf.
-x2 = xopt + min(lmax, 1) * d;
-fx2 = func(x2); funcalls = funcalls + 1;
+% Step3 : Construct extrapolated point, now xopt = pn;
+d = xopt - p0; 
+x3 = xopt + d;
+% Note that x1 = 2pn -p0;
+f3 = func(x3); funcalls = funcalls + 1;
+
 if funcalls >= maxfun
     warnflag = 1;
     return
 end
 
 % Step 4 : Change directions set or not.
-if fx1 > fx2
-    t = 2 * (fx1 + fx2 - 2*fopt);
-    temp = (fx1 - fopt - delta);
+if fp0 > f3
+    t = 2 * (fp0 + f3 - 2*fopt);
+    temp = (fp0 - fopt - delta);
     t = t * temp^2;
-    temp = fx1 - fx2;
+    temp = fp0 - fopt;
     t = t - delta * temp^2;
     if t < 0
+
+        % myfunc = @(x) func(xopt + d * x);
+        % [alpha, fopt, ~, feval_count] = direct_search(myfunc, 0, line_step, 0.5, ftol, inf);
+        % xopt = xopt + d * alpha;
+
         [xopt, fopt, feval_count, magnitude] = linesearch_powell(...
            func, xopt, d, ...
            xtol=xtol, ftol = ftol, ...
-           lower_bound = lb, upper_bound = ub, ...
            fval = fopt, remaining_calls= maxfun - funcalls, ...
            init_step = deltaf);
+
         funcalls = funcalls + feval_count;
         if magnitude > 0
-            direc(bigind, :) = direc(end, :);
-            direc(end, :) = d/norm(d);
-            x1 = xopt;
+            direc(:,bigind) = direc(:,end);
+            direc(:, end) = d/norm(d);
         end
     end
 end
@@ -205,11 +176,15 @@ if funcalls >= maxfun
 end
 
 % Step 5 : Check for convergence
-if abs(fx1-fopt) <= 0.1 * (abs(fx1) + abs(fopt)) * ftol || ...
-    all(abs(x1-xopt) <= 0.1 * xtol)
-    break
+rel_diff = abs(fp0 - fopt) / max([1, abs(fp0), abs(fopt)]);
+if rel_diff < ftol
+    break;
 end
-deltaf = 0.4*sqrt(abs(fx1-fopt));
+
+% Steo 6 : Didn't break, set for the next iteration.
+deltaf = 0.4*sqrt(abs(fp0-fopt));
+p0 = xopt;
+fp0 = fopt;
 
 % if all(abs(x1 - xopt) <= 0.1 * xtol) && isnan(terminal_point1)
 %     terminal_point1 = xopt;
@@ -233,15 +208,6 @@ deltaf = 0.4*sqrt(abs(fx1-fopt));
 %     end
 % end
 
-%Final callback process
-if ~isempty(options.callback)
-    intermediate_values = struct('iteration',iter,...
-        'x', xopt, ...
-        'y', fopt, ...
-        'direction', direc, ...
-        'evaluations', funcalls);
-    options.callback(intermediate_values, 'done');
-end
 
 % Final display
 if options.disp
