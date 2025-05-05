@@ -81,7 +81,7 @@ p0 = x0;
 % Use fopt to record the initial function value in every iteration.
 fp0 = fopt; 
 % Use init_step to define the init step of linesearch in every iterattion.
-deltaf = nan;
+deltaf = 0.4*100*max(x0);
 
 while true
 % Check the numbers of iterations and function evaluations. 
@@ -152,15 +152,15 @@ if fp0 > f3
     t = t - delta * temp^2;
     if t < 0
 
-        % myfunc = @(x) func(xopt + d * x);
-        % [alpha, fopt, ~, feval_count] = direct_search(myfunc, 0, line_step, 0.5, ftol, inf);
-        % xopt = xopt + d * alpha;
+        myfunc = @(x) func(xopt + d * x);
+        [alpha, fopt, ~, feval_count] = direct_search(myfunc, 0, deltaf, 0.5, ftol, inf);
+        xopt = xopt + d * alpha;
 
-        [xopt, fopt, feval_count, magnitude] = linesearch_powell(...
-           func, xopt, d, ...
-           xtol=xtol, ftol = ftol, ...
-           fval = fopt, remaining_calls= maxfun - funcalls, ...
-           init_step = deltaf);
+        % [xopt, fopt, feval_count, magnitude] = linesearch_powell(...
+        %    func, xopt, d, ...
+        %    xtol=xtol, ftol = ftol, ...
+        %    fval = fopt, remaining_calls= maxfun - funcalls, ...
+        %    init_step = deltaf);
 
         funcalls = funcalls + feval_count;
         if magnitude > 0
