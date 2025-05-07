@@ -1,5 +1,5 @@
 function [xopt, fopt, direc, iter, warnflag, funcalls, allvecs] = ...
-    powell_conjugate_direction(func, x0, options)
+    pcd(func, x0, options)
 %{
 Uses a modification of Powell's method to find the minimum of
 a function of N variables with unbounded constaints. 
