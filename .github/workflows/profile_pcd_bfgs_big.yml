@@ -30,12 +30,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
-      - name: Clone public repository
-        uses: actions/checkout@v4
-        with:
-          repository: Lht97/powell_conjugate
-          path: pcd  
 
       - name: Checkout OptiProfiler
         uses: actions/checkout@v4
@@ -44,12 +38,6 @@ jobs:
           path: optiprofiler
           submodules: recursive
           ref: b112c51c924e157731db6609006ee124c49f0832
-
-      - name: Clone PRIMA
-        uses: actions/checkout@v4
-        with:
-          repository: libprima/prima
-          path: prima
 
       - name: Install Texlive
         run: sudo apt-get update && sudo apt-get install texlive
@@ -82,13 +70,9 @@ jobs:
               cd(fullfile(root_dir, 'optiprofiler'));
               setup
               cd(root_dir);
-
-              % Setup prima
-              cd(fullfile(root_dir, 'prima'));
-              setup
   
               % Setup Powell's method
-              cd(fullfile(root_dir, 'pcd', 'src'));
+              cd(fullfile(root_dir, 'src'));
               addpath(pwd);
   
               % profile

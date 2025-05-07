@@ -88,7 +88,7 @@ jobs:
               setup
   
               % Setup Powell's method
-              cd(fullfile(root_dir, 'pcd', 'src'));
+              cd(fullfile(root_dir, 'src'));
               addpath(pwd);
   
               % profile

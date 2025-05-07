@@ -20,7 +20,7 @@ jobs:
         dim: [big]
         with_optim_toolbox: [yes]
         solver: [pcd]
-        competitor: [fminsearch]
+        competitor: [nelder-mead]
         run_plain: [false]
         summarize_log_ratio_profiles: [false]
         feature: [plain, noisy_1e-1, noisy_1e-2, noisy_1e-3]
@@ -88,7 +88,7 @@ jobs:
               setup
   
               % Setup Powell's method
-              cd(fullfile(root_dir, 'pcd', 'src'));
+              cd(fullfile(root_dir, 'src'));
               addpath(pwd);
   
               % profile
