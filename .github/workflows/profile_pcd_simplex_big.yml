@@ -43,13 +43,13 @@ jobs:
           repository: optiprofiler/optiprofiler
           path: optiprofiler
           submodules: recursive
-          ref: b112c51c924e157731db6609006ee124c49f0832
+          ref: 912b4b8e3b11db078342894f1242ab23c9a67d31
 
-      - name: Clone PRIMA
+      - name: Clone BDS to get profile_optiprofiler.m
         uses: actions/checkout@v4
         with:
-          repository: libprima/prima
-          path: prima
+          repository: blockwise-direct-search/bds
+          path: bds
 
       - name: Install Texlive
         run: sudo apt-get update && sudo apt-get install texlive
@@ -82,13 +82,13 @@ jobs:
               cd(fullfile(root_dir, 'optiprofiler'));
               setup
               cd(root_dir);
-
-              % Setup prima
-              cd(fullfile(root_dir, 'prima'));
-              setup
   
               % Setup Powell's method
               cd(fullfile(root_dir, 'src'));
+              addpath(pwd);
+
+              % Get the right to visit profile_optiprofiler.m in bds repository
+              cd(fullfile(root_dir, 'bds', tests));
               addpath(pwd);
   
               % profile
