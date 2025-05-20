@@ -30,12 +30,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
-      - name: Clone public repository
-        uses: actions/checkout@v4
-        with:
-          repository: Lht97/powell_conjugate
-          path: pcd  
 
       - name: Checkout OptiProfiler
         uses: actions/checkout@v4

@@ -2,7 +2,7 @@ name: Profile pcd and ds using optiprofiler, small
 
 on:
   # Trigger the workflow on # push or pull request
-  # push:
+  push:
   # Trigger the workflow manually
   schedule:
   - cron: '0 0 */2 * *'
@@ -83,7 +83,8 @@ jobs:
 
               % Setup BDS
               cd(fullfile(root_dir, 'bds'));
-              setup    
+              setup
+              ls
               
               % Get the right to visit profile_optiprofiler.m in bds repository
               cd(fullfile(root_dir, 'bds', tests));
