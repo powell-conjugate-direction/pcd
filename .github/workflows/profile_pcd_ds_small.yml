@@ -81,13 +81,10 @@ jobs:
               cd(fullfile(root_dir, 'src'));
               addpath(pwd);
 
-              % Setup BDS
+              % Setup BDS and get the right to visit profile_optiprofiler.m
               cd(fullfile(root_dir, 'bds'));
               setup
-              ls
-              
-              % Get the right to visit profile_optiprofiler.m in bds repository
-              cd(fullfile(root_dir, 'bds', tests));
+              cd ./tests
               addpath(pwd);
   
               % profile
